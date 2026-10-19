@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LectureLens — Simple Notes & Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    #contentArea h1 { font-size: 1.875rem; font-weight: 800; color: #1c1917; margin-bottom: 0.75rem; }
+    #contentArea h2 { font-size: 1.35rem; font-weight: 700; color: #b45309; margin-top: 1.75rem; margin-bottom: 0.75rem; padding-bottom: 0.25rem; border-bottom: 2px solid #fef3c7; }
+    #contentArea h3 { font-size: 1.1rem; font-weight: 700; color: #1c1917; margin-top: 1.25rem; margin-bottom: 0.5rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 0.5rem; border-left: 4px solid #d97706; }
+    #contentArea p { margin-bottom: 0.85rem; line-height: 1.65; }
+    #contentArea ul { margin-bottom: 1rem; padding-left: 1.25rem; list-style-type: disc; }
+    #contentArea li { margin-bottom: 0.4rem; }
+    #contentArea strong { color: #0f172a; font-weight: 700; }
+    #contentArea hr { border: 0; border-top: 1px solid #e2e8f0; margin: 1.75rem 0; }
+  </style>
+</head>
+<body class="bg-amber-50/40 text-stone-800 font-sans min-h-screen py-10 px-4">
+
+  <div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <span class="inline-block px-3 py-1 bg-amber-100 text-amber-900 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+        🌱 Instant Study Guide & Quiz
+      </span>
+      <h1 class="text-4xl font-black text-stone-900">LectureLens</h1>
+      <p class="text-stone-600 mt-2 text-sm">Paste any YouTube lecture to get clear block notes and a practice quiz.</p>
+    </header>
+
+    <!-- Search Box -->
+    <div class="bg-white p-3 rounded-2xl shadow-sm border border-stone-200 flex flex-col sm:flex-row gap-2">
+      <input id="urlInput" type="text" placeholder="Paste YouTube link here..."
+             class="flex-1 px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm" />
+      <button onclick="runExplain()" id="goBtn"
+              class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl transition-all shadow-sm text-sm">
+        Explain Video
+      </button>
+    </div>
+
+    <!-- Spinner -->
+    <div id="loader" class="hidden text-center py-8">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-amber-600 border-t-transparent mb-3"></div>
+      <p id="timerLabel" class="text-stone-600 text-sm font-semibold">Analyzing video and writing notes... (0s)</p>
+    </div>
+
+    <!-- Results Area -->
+    <section id="results" class="hidden mt-6 bg-white p-6 sm:p-10 rounded-2xl shadow-sm border border-stone-200">
+      <div id="contentArea"></div>
+    </section>
+  </div>
+
+  <script>
+    let timer = null;
+
+    async function runExplain() {
+      const url = document.getElementById("urlInput").value.trim();
+      const loader = document.getElementById("loader");
+      const results = document.getElementById("results");
+      const contentArea = document.getElementById("contentArea");
+      const goBtn = document.getElementById("goBtn");
+      const timerLabel = document.getElementById("timerLabel");
+
+      if (!url) {
+        alert("Please paste a YouTube link!");
+        return;
+      }
+
+      contentArea.innerHTML = "";
+      results.classList.add("hidden");
+      loader.classList.remove("hidden");
+      goBtn.disabled = true;
+      goBtn.innerText = "Analyzing...";
+
+      let seconds = 0;
+      timerLabel.innerText = "Analyzing video and writing notes... (0s)";
+      timer = setInterval(() => {
+        seconds++;
+        timerLabel.innerText = `Analyzing video and writing notes... (${seconds}s)`;
+      }, 1000);
+
+      try {
+        const response = await fetch("/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: url })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          contentArea.innerHTML = marked.parse(data.markdown);
+          results.classList.remove("hidden");
+        } else {
+          alert("Error from server: " + (data.error || "Unknown error"));
+        }
+      } catch (err) {
+        alert("Connection error: Could not reach python backend. Make sure app.py is running!");
+      } finally {
+        loader.classList.add("hidden");
+        clearInterval(timer);
+        goBtn.disabled = false;
+        goBtn.innerText = "Explain Video";
+      }
+    }
+  </script>
+</body>
+</html>
