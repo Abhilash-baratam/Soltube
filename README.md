@@ -40,6 +40,43 @@ Generating a study guide may take some time because the application needs to ext
 
 The goal of Soltube is to make learning from educational videos easier by turning video content into organized and useful study material.
 
+
+### Prerequisites
+* Node.js 18+ and `npm` / `pnpm` / `yarn`
+* Rust and Cargo (for smart contract development)
+* Solana CLI tools and Anchor framework
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone [https://github.com/Abhilash-baratam/Soltube.git](https://github.com/Abhilash-baratam/Soltube.git)
+   cd Soltube
+   
+Install client dependencies:
+
+Bash
+npm install
+Set up environment variables:
+
+Bash
+cp .env.example .env.local
+
+# Configure your Solana RPC endpoint (Devnet/Mainnet) and IPFS gateway keys
+Running Locally
+Start Frontend App:
+
+Bash
+npm run dev
+Open http://localhost:3000 in your browser.
+
+Anchor Smart Contract (Optional):
+
+Bash
+cd anchor-program
+anchor build
+anchor test
+
 ## Repository
 
 GitHub: https://github.com/Abhilash-baratam/Soltube
